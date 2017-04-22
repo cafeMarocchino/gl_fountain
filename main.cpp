@@ -55,6 +55,10 @@ float position[] = {
 Color color_factory;
 float *red = color_factory.get_color(256, 0, 0);
 float *yellow = color_factory.get_color(256, 256, 0);
+float *blue = color_factory.get_color(0, 0, 256);
+float *green = color_factory.get_color(0, 256, 0);
+float *cyan = color_factory.get_color(0, 256, 256);
+float *pupple = color_factory.get_color(256, 0, 256);
 
 int main(int argc, char* argv[])
 {
@@ -231,9 +235,17 @@ void draw_vertex(int number_of_vertex) {
     for (int i = 0; i < number_of_vertex; i++) {
     //mat4x4f R = rotate(ang, 0.0f, 0.0f, 0.0f);
     float *color;
-    if(vx[i] > 0) 
+    if(vx[i] > 15)
+      color = blue;
+    else if(vx[i] > 7.5)
       color = red;
-    else
+    else if(vx[i] > 0)
+      color = green;
+    else if(vx[i] > -7.5)
+      color = pupple;
+    else if(vx[i] > -15)
+      color = cyan;
+    else 
       color = yellow;
     glVertexAttribPointer(loc_a_position, 4, GL_FLOAT, GL_FALSE, 0, position);   
     glVertexAttribPointer(loc_a_color, 4, GL_FLOAT, GL_FALSE, 0, color);
