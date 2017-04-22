@@ -8,6 +8,7 @@
 #include "vec.hpp"
 #include "mat.hpp"
 #include "transform.hpp"
+#include "color.hpp"
 
 using namespace kmuvcl::math;
 
@@ -51,24 +52,10 @@ float position[] = {
   3.0f, 3.0f, 0.0f, 1.0f,
   0.0f, 3.0f, 0.0f, 1.0f,
 };
-float red[] = {
-  1.0f, 0.0f, 0.0f, 1.0f,
-  1.0f, 0.0f, 0.0f, 1.0f,
-  1.0f, 0.0f, 0.0f, 1.0f,
-  
-  1.0f, 0.0f, 0.0f, 1.0f,
-  1.0f, 0.0f, 0.0f, 1.0f,
-  1.0f, 0.0f, 0.0f, 1.0f,
-};
-float yellow[] = {
-  1.0f, 1.0f, 0.0f, 1.0f,
-  1.0f, 1.0f, 0.0f, 1.0f,
-  1.0f, 1.0f, 0.0f, 1.0f,
-  
-  1.0f, 1.0f, 0.0f, 1.0f,
-  1.0f, 1.0f, 0.0f, 1.0f,
-  1.0f, 1.0f, 0.0f, 1.0f,
-};
+Color color_factory;
+float *red = color_factory.get_color(256, 0, 0);
+float *yellow = color_factory.get_color(256, 256, 0);
+
 int main(int argc, char* argv[])
 {
   srand(time(NULL));
@@ -143,26 +130,17 @@ void init()
 void mydisplay()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-
   mat4x4f M, V, P;
-
-
   V = lookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-
   P = perspective(zoom, 1.0f, 0.001f, 10000.0f);
-
+  
   glUseProgram(program);
-
   glUniformMatrix4fv(loc_u_V, 1, false, V);
   glUniformMatrix4fv(loc_u_P, 1, false, P);
-
-
+  
   draw_vertex(number_of_vertex);
   
   glUseProgram(0);
-
   glutSwapBuffers();
 }
 
@@ -206,7 +184,6 @@ void myidle() {
   //T = new mat4x4f[number_of_vertex]();
   for(int i = 0; i < number_of_vertex; i++) {
     ty[i] += 0.02f;
-    std::cout << vx[i] << std::endl;
     if(ty[i] < 0) {
       T[i] = translate(0.0f, 0.0f, 0.0f);
     } else {
@@ -251,16 +228,15 @@ void select_menu(int value) {
   init_parameters();
 }
 void draw_vertex(int number_of_vertex) {
-  for (int i = 0; i < number_of_vertex; i++) {
+    for (int i = 0; i < number_of_vertex; i++) {
     //mat4x4f R = rotate(ang, 0.0f, 0.0f, 0.0f);
     float *color;
     if(vx[i] > 0) 
-      color = yellow;
-    else
       color = red;
+    else
+      color = yellow;
     glVertexAttribPointer(loc_a_position, 4, GL_FLOAT, GL_FALSE, 0, position);   
     glVertexAttribPointer(loc_a_color, 4, GL_FLOAT, GL_FALSE, 0, color);
-
     glEnableVertexAttribArray(loc_a_color);
     glEnableVertexAttribArray(loc_a_position);
 
@@ -270,8 +246,6 @@ void draw_vertex(int number_of_vertex) {
   
     glDisableVertexAttribArray(loc_a_color);
     glDisableVertexAttribArray(loc_a_position);
-
-
   }
 }
 void init_parameters() {
