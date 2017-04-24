@@ -9,6 +9,7 @@
 #include "mat.hpp"
 #include "transform.hpp"
 #include "color.hpp"
+#include "camera.h"
 
 using namespace kmuvcl::math;
 
@@ -42,6 +43,23 @@ float vy[1000];
 const float g = 9.8f;
 float tx[1000];
 float ty[1000];
+
+class JhPosition : public CameraPosition {
+  public:
+    JhPosition(float eyex, float eyey, float eyez,
+      float centerx, float centery, float centerz,
+      float upx, float upy, float upz) {
+      super(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
+    }
+    JhPosition(float fovy, float aspect, float near, float far) {
+      super(fovy, aspect, near, far);
+    }
+    mat4x4f lookAt() {
+      kmuvcl::math::lookAt(_eyex, _eyey, _eyez, _centerx, _centery, _centerz, _upx, _upy, _upz);
+    }
+};
+
+Camera camera(
 
 float position[] = {
   0.0f, 0.0f, 0.0f, 1.0f,
