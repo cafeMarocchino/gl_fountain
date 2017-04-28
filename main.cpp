@@ -8,8 +8,9 @@
 #include "vec.hpp"
 #include "mat.hpp"
 #include "transform.hpp"
-#include "color.hpp"
-#include "camera.h"
+#include "./camera/camera.h"
+#include "./camera/camera_builder.h"
+#include "./object/object.h"
 
 using namespace kmuvcl::math;
 
@@ -30,36 +31,13 @@ GLint  loc_a_color;
 GLint  loc_u_M;
 GLint  loc_u_V;
 GLint  loc_u_P;
-float ang = 0.0f;
-float zoom = 183.0f;
-float eyex = 0.0f, eyey = -100.0f, eyez = 5.0f;
-float centerx = 0.0f, centery = -100.0f, centerz = 0.0f;
-float upx = 0.0f, upy = 1.0f, upz= 0.0f;
 int number_of_vertex = 1000;
-mat4x4f T[1000];
 vec4f init_position[1000];
 float vx[1000];
 float vy[1000];
 const float g = 9.8f;
 float tx[1000];
 float ty[1000];
-
-class JhPosition : public CameraPosition {
-  public:
-    JhPosition(float eyex, float eyey, float eyez,
-      float centerx, float centery, float centerz,
-      float upx, float upy, float upz) {
-      super(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-    }
-    JhPosition(float fovy, float aspect, float near, float far) {
-      super(fovy, aspect, near, far);
-    }
-    mat4x4f lookAt() {
-      kmuvcl::math::lookAt(_eyex, _eyey, _eyez, _centerx, _centery, _centerz, _upx, _upy, _upz);
-    }
-};
-
-Camera camera(
 
 float position[] = {
   0.0f, 0.0f, 0.0f, 1.0f,
@@ -70,16 +48,43 @@ float position[] = {
   3.0f, 3.0f, 0.0f, 1.0f,
   0.0f, 3.0f, 0.0f, 1.0f,
 };
-Color color_factory;
-float *red = color_factory.get_color(256, 0, 0);
-float *yellow = color_factory.get_color(256, 256, 0);
-float *blue = color_factory.get_color(0, 0, 256);
-float *green = color_factory.get_color(0, 256, 0);
-float *cyan = color_factory.get_color(0, 256, 256);
-float *pupple = color_factory.get_color(256, 0, 256);
+
+Object* object;
+class JhCameraPosition : public CameraPosition {
+  public :
+    JhCameraPosition(float eyex, float eyey, float eyez, 
+      float centerx, float centery, float centerz, 
+      float upx, float upy, float upz) : CameraPosition(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz){}
+    mat4x4f look_at() {
+      return lookAt(_eyex, _eyey, _eyez, _centerx, _centery, _centerz, _upx, _upy, _upz);
+    }
+};
+class JhCameraView : public CameraView {
+  public :
+    JhCameraView(float left, float right, float bottom, float top, float near, float far)
+      : CameraView(left, right, bottom, top, near, far) {}
+    JhCameraView(float fovy, float aspect, float near, float far) : CameraView(fovy, aspect, near, far) {} 
+    mat4x4f ortho() {
+      return kmuvcl::math::ortho(_left, _right, _bottom, _top, _near, _far);
+    }
+    mat4x4f frustum() {
+      return kmuvcl::math::frustum(_left, _right, _bottom, _top, _near, _far);
+    }
+};
+Camera* camera;
+CameraBuilder builder;
 
 int main(int argc, char* argv[])
 {
+  builder.set_position(new JhCameraPosition(0.0f, -120.0f, 5.0f, 0.0f, -120.0f, 0.0f, 0.0f, 1.0f, 0.0f));
+  builder.set_view(new JhCameraView(183.0f, 1.0f, 0.01f, 10000.0f));
+  camera = builder.build();
+  
+  object = new Object[number_of_vertex];
+  for (int i = 0; i < number_of_vertex; i++) {
+    object[i].init(position);
+  }
+
   srand(time(NULL));
   init_parameters();
   glutInit(&argc, argv);
@@ -93,7 +98,7 @@ int main(int argc, char* argv[])
   glutSpecialFunc(arrow_key);
   glutIdleFunc(myidle);
   glutMainLoop();
-
+  delete object;
   return 0;
 }
 
@@ -153,9 +158,9 @@ void mydisplay()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   mat4x4f M, V, P;
-  V = lookAt(eyex, eyey, eyez, centerx, centery, centerz, upx, upy, upz);
-  P = perspective(zoom, 1.0f, 0.001f, 10000.0f);
-  
+  V = camera->look_at();
+  P = camera->perspective();
+
   glUseProgram(program);
   glUniformMatrix4fv(loc_u_V, 1, false, V);
   glUniformMatrix4fv(loc_u_P, 1, false, P);
@@ -168,36 +173,34 @@ void mydisplay()
 
 void mykeyboard(unsigned char key, int x, int y) {
   if(key == '+') {
-    zoom += 1;
+    camera->zoom(1, IN);
   } else if(key == '-') {
-    zoom -= 1;
+    camera->zoom(1, OUT);
   }
   glutPostRedisplay();
-   std::cout << zoom << std::endl; 
 }
 void arrow_key(int key, int x, int y) {
    switch(key) {
     case GLUT_KEY_UP:
-      eyey += 1;
-      centery += 1;
+      camera->move(1, UP);
+      glutPostRedisplay();
       break;
     case GLUT_KEY_DOWN:
-      eyey -= 1;
-      centery -= 1;
+      camera->move(1, DOWN);
+      glutPostRedisplay();
       break;
     case GLUT_KEY_LEFT:
-      eyex -= 1;
-      centerx -= 1;
+      camera->move(1, LEFT);
+      glutPostRedisplay();
       break;
     case GLUT_KEY_RIGHT:
-      eyex += 1;
-      centerx += 1;
+      camera->move(1, RIGHT);
+      glutPostRedisplay();
       break;
     case GLUT_KEY_HOME:
-      zoom = 30.0f;
-      eyex = 0.0f, eyey = 0.0f, eyez = 5.0f;
-      centerx = 0.0f, centery = 0.0f, centerz = 0.0f;
-      upx = 0.0f, upy = 1.0f, upz= 0.0f;
+      builder.set_position(new JhCameraPosition(0.0f, -120.0f, 5.0f, 0.0f, -120.0f, 0.0f, 0.0f, 1.0f, 0.0f));
+      builder.set_view(new JhCameraView(183.0f, 1.0f, 0.01f, 10000.0f));
+      camera = builder.build();
       break;
   }
   glutPostRedisplay();
@@ -207,11 +210,11 @@ void myidle() {
   for(int i = 0; i < number_of_vertex; i++) {
     ty[i] += 0.02f;
     if(ty[i] < 0) {
-      T[i] = translate(0.0f, 0.0f, 0.0f);
+      object[i].translate(0.0f, 0.0f, 0.0f);
     } else {
       tx[i] += 0.01f;
-      T[i] = translate(init_position[i](0) + vx[i] * tx[i], -(init_position[i](1) + vy[i] * ty[i] - (0.5f * g * ty[i] * ty[i])), 0.0f);
-      if((T[i] * vec4f(0.0f, 0.0f, 0.0f, 0.1f))(1) > 0.0f) {
+      object[i].translate(init_position[i](0) + vx[i] * tx[i], -(init_position[i](1) + vy[i] * ty[i] - (0.5f * g * ty[i] * ty[i])), 0.0f);
+      if((object[i].get_translate() * vec4f(0.0f, 0.0f, 0.0f, 0.1f))(1) > 0.0f) {
         vy[i] /= 1.3f;
         ty[i] = 0.0f;
       }
@@ -227,6 +230,7 @@ void create_menu() {
   glutAddMenuEntry("100", 100);
   glutAddMenuEntry("500", 500);
   glutAddMenuEntry("1000", 1000);
+
   glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 void select_menu(int value) {
@@ -247,30 +251,35 @@ void select_menu(int value) {
       number_of_vertex = 1000;
       break;
   }
+  object = new Object[number_of_vertex];
+  for(int i = 0; i < number_of_vertex; i++) {
+    object[i].init(position);
+  }
   init_parameters();
 }
 void draw_vertex(int number_of_vertex) {
     for (int i = 0; i < number_of_vertex; i++) {
     //mat4x4f R = rotate(ang, 0.0f, 0.0f, 0.0f);
+    
     float *color;
     if(vx[i] > 15)
-      color = blue;
+      object[i].set_colors(0, 0, 255);
     else if(vx[i] > 7.5)
-      color = red;
+      object[i].set_colors(255, 0, 0);
     else if(vx[i] > 0)
-      color = green;
+      object[i].set_colors(0, 255, 0);
     else if(vx[i] > -7.5)
-      color = pupple;
+      object[i].set_colors(255, 0, 255);
     else if(vx[i] > -15)
-      color = cyan;
+      object[i].set_colors(0, 255, 255);
     else 
-      color = yellow;
-    glVertexAttribPointer(loc_a_position, 4, GL_FLOAT, GL_FALSE, 0, position);   
-    glVertexAttribPointer(loc_a_color, 4, GL_FLOAT, GL_FALSE, 0, color);
+      object[i].set_colors(255, 255, 0);
+    glVertexAttribPointer(loc_a_position, 4, GL_FLOAT, GL_FALSE, 0, object[i].get_vertice());   
+    glVertexAttribPointer(loc_a_color, 4, GL_FLOAT, GL_FALSE, 0, object[i].get_colors());
     glEnableVertexAttribArray(loc_a_color);
     glEnableVertexAttribArray(loc_a_position);
 
-    mat4x4f M = T[i];
+    mat4x4f M = object[i].get_translate();
     glUniformMatrix4fv(loc_u_M, 1, false, M);
     glDrawArrays(GL_TRIANGLES, 0, 6 /* 정점개수 */);
   
@@ -281,7 +290,7 @@ void draw_vertex(int number_of_vertex) {
 void init_parameters() {
   for(int i = 0; i < number_of_vertex; i++) {
     init_position[i] = vec4f(float(rand() % 10000) / 1000.0f - 5.0f, float(rand() % 10000) / 1000.0f, 0.0f);
-    T[i] = translate((float(rand() % 10000) /1000.0f - 5.0f), float(rand() % 10000) / 1000.0f, 0.0f);
+    object[i].translate((float(rand() % 10000) /1000.0f - 5.0f), float(rand() % 10000) / 1000.0f, 0.0f);
     vx[i] = float(rand() % 4000) / 100.f - 20.0f;
     vy[i] = float(rand() % 500) / 10.f + 20.0f;
     ty[i] = float(rand() % 500) / 10.f - 50.0f;

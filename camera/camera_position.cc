@@ -1,11 +1,11 @@
-#include "CameraPosition.h"
+#include "camera_position.h"
 
-CamaraPosition::CameraPosition(float eyex, float eyey, float eyez, 
+CameraPosition::CameraPosition(float eyex, float eyey, float eyez, 
     float centerx, float centery, float centerz, 
     float upx, float upy, float upz) {
   _eyex = eyex;
   _eyey = eyey;
-  _eyez = eyey;
+  _eyez = eyez;
   _centerx = centerx;
   _centery = centery;
   _centerz = centerz;
@@ -18,7 +18,7 @@ void CameraPosition::set_eye(float x, float y, float z) {
   _eyey = y;
   _eyez = z;
 }
-void CamaraPosition::set_center(float x, float y, float z) {
+void CameraPosition::set_center(float x, float y, float z) {
   _centerx = x;
   _centery = y;
   _centerz = z;
@@ -27,4 +27,11 @@ void CameraPosition::set_up(float x, float y, float z) {
   _upx = x;
   _upy = y;
   _upz = z;
+}
+vec3f CameraPosition::get_eye() {
+  return vec3f(_eyex, _eyey, _eyez);
+}vec3f CameraPosition::get_center() {
+  return vec3f(_centerx, _centery, _centerz);
+}vec3f CameraPosition::get_up() {
+  return vec3f(_upx, _upy, _upz);
 }
