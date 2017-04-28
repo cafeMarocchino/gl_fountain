@@ -38,7 +38,6 @@ float vy[1000];
 const float g = 9.8f;
 float tx[1000];
 float ty[1000];
-
 float position[] = {
   0.0f, 0.0f, 0.0f, 1.0f,
   3.0f, 0.0f, 0.0f, 1.0f,
@@ -76,7 +75,7 @@ CameraBuilder builder;
 
 int main(int argc, char* argv[])
 {
-  builder.set_position(new JhCameraPosition(0.0f, -120.0f, 5.0f, 0.0f, -120.0f, 0.0f, 0.0f, 1.0f, 0.0f));
+  builder.set_position(new JhCameraPosition(0.0f, -100.0f, 5.0f, 0.0f, -100.0f, 0.0f, 0.0f, 1.0f, 0.0f));
   builder.set_view(new JhCameraView(183.0f, 1.0f, 0.01f, 10000.0f));
   camera = builder.build();
   

@@ -2,8 +2,8 @@
 #define __CAMERA_BUILDER_H__
 
 #include <iostream>
-#include "vec.hpp"
-#include "mat.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
 #include "camera.h"
 #include "camera_position.h"
 #include "camera_view.h"

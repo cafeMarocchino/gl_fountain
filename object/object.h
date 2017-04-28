@@ -6,10 +6,10 @@
 #define ZAXIS 3
 
 
-#include "vec.hpp"
-#include "mat.hpp"
-#include "transform.hpp"
-#include "operator.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
+#include "../transform.hpp"
+#include "../operator.hpp"
 #include "color.h"
 
 using namespace::kmuvcl::math;

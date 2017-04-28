@@ -1,8 +1,8 @@
 #ifndef __CAMERA_POSITION_H__
 #define __CAMERA_POSITION_H__
 
-#include "vec.hpp"
-#include "mat.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
 
 using namespace kmuvcl::math;
 

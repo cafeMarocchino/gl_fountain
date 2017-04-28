@@ -3,8 +3,8 @@
 
 
 #include <cmath>
-#include "vec.hpp"
-#include "mat.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
 
 using namespace kmuvcl::math;
 

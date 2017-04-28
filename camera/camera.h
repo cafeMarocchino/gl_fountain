@@ -9,8 +9,8 @@
 #define OUT 6
 
 #include <iostream>
-#include "vec.hpp"
-#include "mat.hpp"
+#include "../vec.hpp"
+#include "../mat.hpp"
 #include "camera_position.h"
 #include "camera_view.h"
 
